@@ -1,21 +1,11 @@
 #include <iostream>
 #include <boost/beast.hpp>
+#include "client.hpp"
 
 namespace beast = boost::beast;
 namespace asio = boost::asio;
 
-int main(int argc, char** argv) {
-  if (argc != 4) {
-    std::cerr << "Usage: WebServer <host> <port> <target>" << std::endl;
-    return EXIT_FAILURE;
-  }
-
-  std::cout << "Starting client..." << std::endl;
-
-  const auto host = argv[1];
-  const auto port = argv[2];
-  const auto target = argv[3];
-
+bool request(char* host, char* port, char* target) {
   asio::io_context ctx;
   asio::ip::tcp::resolver resolver(ctx);
   beast::tcp_stream stream(ctx);
@@ -52,5 +42,5 @@ int main(int argc, char** argv) {
       error
     };
 
-  return EXIT_SUCCESS;
+  return true;
 }

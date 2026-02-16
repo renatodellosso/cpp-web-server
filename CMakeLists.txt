@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 4.1)
 
-project(Client)
+project(WebServer)
 
-add_executable(Client src/client.cpp)
+add_executable(WebServer src/main.cpp)
 
 find_package(Boost REQUIRED)
-target_include_directories(Client PRIVATE ${Boost_INCLUDE_DIRS})
+target_include_directories(WebServer PRIVATE ${Boost_INCLUDE_DIRS})
+
+file(GLOB SOURCE_FILES src/*.cpp src/*.hpp)
+target_sources(WebServer PRIVATE ${SOURCE_FILES})

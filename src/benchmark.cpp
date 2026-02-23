@@ -11,6 +11,7 @@
 constexpr unsigned int DEFAULT_DURATION = 20;
 
 std::vector<BenchmarkConfig> benchmarkConfigs = {
+    {DEFAULT_DURATION, 1},
     {DEFAULT_DURATION, 3},
     {DEFAULT_DURATION, 5},
     {DEFAULT_DURATION, 10},

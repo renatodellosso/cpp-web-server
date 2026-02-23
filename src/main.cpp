@@ -1,9 +1,8 @@
-#include "server.hpp"
+#include "benchmark.hpp"
 
 int main()
 {
-  startServer(
-      "127.0.0.1", 3000, "./public");
+  runBenchmark();
 
   return 0;
 }

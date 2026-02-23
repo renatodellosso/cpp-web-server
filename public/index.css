@@ -1,0 +1,5 @@
+body {
+  background-color: powderblue;
+  width: 600px;
+  margin: 0 auto; /* Centers the block-level element horizontally */
+}

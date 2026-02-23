@@ -15,12 +15,14 @@ namespace asio = boost::asio;
 void logResponse(std::string target,
                  beast::http::status status)
 {
-  std::cout << status << ": " << target << "\n";
+  if (SERVER_LOGGING_ENABLED)
+    std::cout << status << ": " << target << "\n";
 }
 
 void fail(beast::error_code error, const char *what)
 {
-  std::cerr << what << ": " << error.message() << "\n";
+  if (SERVER_LOGGING_ENABLED)
+    std::cerr << what << ": " << error.message() << "\n";
 }
 
 beast::string_view mimeType(beast::string_view path)
@@ -267,14 +269,17 @@ void startServer(const char *addressRaw, unsigned short port, const char *docRoo
   const auto address = asio::ip::make_address(addressRaw);
   const auto docRoot = std::make_shared<std::string>(docRootRaw);
 
-  std::cout << "Server starting on port " << port << " with root '" << *docRoot << "'\n";
+  if (SERVER_LOGGING_ENABLED)
+    std::cout << "Server starting on port " << port << " with root '" << *docRoot << "'\n";
 
   asio::io_context ctx{1};
 
   asio::ip::tcp::acceptor acceptor{
       ctx, {address, port}};
 
-  std::cout << "Server started\n";
+  if (SERVER_LOGGING_ENABLED)
+    std::cout << "Server started\n";
+
   while (true)
   {
     asio::ip::tcp::socket socket{ctx};

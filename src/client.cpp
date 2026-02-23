@@ -5,7 +5,8 @@
 namespace beast = boost::beast;
 namespace asio = boost::asio;
 
-bool request(char* host, char* port, char* target) {
+bool request(char *host, char *port, char *target)
+{
   asio::io_context ctx;
   asio::ip::tcp::resolver resolver(ctx);
   beast::tcp_stream stream(ctx);
@@ -13,12 +14,19 @@ bool request(char* host, char* port, char* target) {
   // Resolve host -> IP
   const auto results = resolver.resolve(host, port);
 
-  stream.connect(results);
+  try
+  {
+    stream.connect(results);
+  }
+  catch (boost::wrapexcept<boost::system::system_error> error)
+  {
+    return false;
+  }
 
-  beast::http::request<beast::http::string_body> req {
-    beast::http::verb::get,
-    target,
-    10 // HTTP Version 1.0
+  beast::http::request<beast::http::string_body> req{
+      beast::http::verb::get,
+      target,
+      10 // HTTP Version 1.0
   };
   req.set(beast::http::field::host, host);
   req.set(beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
@@ -31,16 +39,13 @@ bool request(char* host, char* port, char* target) {
   beast::http::response<beast::http::dynamic_body> res;
   beast::http::read(stream, buffer, res);
 
-  std::cout << res << std::endl;
-
   // Close socket
   beast::error_code error;
   stream.socket().shutdown(asio::ip::tcp::socket::shutdown_both, error);
 
   if (error && error != beast::errc::not_connected)
-    throw beast::system_error {
-      error
-    };
+    throw beast::system_error{
+        error};
 
   return true;
 }

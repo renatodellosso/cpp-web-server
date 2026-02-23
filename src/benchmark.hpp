@@ -1,6 +1,11 @@
 #pragma once
 
-#define BENCHMARK_DURATION 60
-#define BENCHMARK_CLIENT_THREADS 20
+#include <vector>
 
-void runBenchmark();
+struct BenchmarkConfig
+{
+  unsigned int duration;
+  unsigned int clients;
+};
+
+void runBenchmarks();

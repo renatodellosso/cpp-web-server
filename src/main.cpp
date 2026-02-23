@@ -2,7 +2,7 @@
 
 int main()
 {
-  runBenchmark();
+  runBenchmarks();
 
   return 0;
 }

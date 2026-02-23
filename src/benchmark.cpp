@@ -8,9 +8,17 @@
 #include "client.hpp"
 #include "numformat.hpp"
 
+constexpr unsigned int DEFAULT_DURATION = 20;
+
+std::vector<BenchmarkConfig> benchmarkConfigs = {
+    {DEFAULT_DURATION, 3},
+    {DEFAULT_DURATION, 5},
+    {DEFAULT_DURATION, 10},
+    {DEFAULT_DURATION, 25}};
+
 bool benchmarkDone = false;
 
-struct BenchmarkResults
+struct BenchmarkClientResults
 {
   unsigned int successes;
   unsigned int failures;
@@ -27,9 +35,9 @@ bool makeRequest(char *target)
   return request("127.0.0.1", "3000", target);
 }
 
-BenchmarkResults clientProcess()
+BenchmarkClientResults clientProcess()
 {
-  BenchmarkResults results;
+  BenchmarkClientResults results;
 
   char *targets[3] = {
       "/index.html",
@@ -47,35 +55,50 @@ BenchmarkResults clientProcess()
   return results;
 }
 
-void runBenchmark()
+void logBenchmark(BenchmarkConfig config, unsigned int successes, unsigned int failures)
 {
-  std::thread server(createServer);
+  unsigned int throughput = successes / config.duration;
 
-  std::future<BenchmarkResults> clients[BENCHMARK_CLIENT_THREADS];
+  std::cout << "\nBenchmark: " << config.clients << " clients, " << config.duration << "s duration\n";
+  std::cout << "Throughput: " << throughput << " reqs/sec\n";
+  std::cout << "Success Rate: " << (100 * successes / (successes + failures)) << "%\n";
+}
 
-  for (int i = 0; i < BENCHMARK_CLIENT_THREADS; i++)
+void runBenchmark(BenchmarkConfig benchmark)
+{
+  benchmarkDone = false;
+
+  std::future<BenchmarkClientResults> clients[benchmark.clients];
+
+  for (int i = 0; i < benchmark.clients; i++)
     clients[i] = std::async(&clientProcess);
 
-  std::cout << "Benchmark started with " << BENCHMARK_CLIENT_THREADS << " clients. Waiting for " << BENCHMARK_DURATION << " seconds...\n";
-  std::this_thread::sleep_for(std::chrono::seconds(BENCHMARK_DURATION));
+  std::this_thread::sleep_for(std::chrono::seconds(benchmark.duration));
 
   benchmarkDone = true;
 
   unsigned int totalSuccesses = 0, totalFailures = 0;
-  for (int i = 0; i < BENCHMARK_CLIENT_THREADS; i++)
+  for (int i = 0; i < benchmark.clients; i++)
   {
-    BenchmarkResults results = clients[i].get();
+    BenchmarkClientResults results = clients[i].get();
     totalSuccesses += results.successes;
     totalFailures += results.failures;
   }
-  unsigned int throughput = totalSuccesses / BENCHMARK_DURATION;
 
+  logBenchmark(benchmark, totalSuccesses, totalFailures);
+}
+
+void runBenchmarks()
+{
   // Set locale for comma formatting
   std::locale locale(std::locale(), new NumberFormat());
   std::cout.imbue(locale);
 
-  std::cout << "Benchmark Complete! Result: " << throughput << " reqs/sec\n";
-  std::cout << "Success Rate: " << (100 * totalSuccesses / (totalSuccesses + totalFailures)) << "%\n";
+  std::thread server(createServer);
+  std::cout << "Started server\n";
+
+  for (auto benchmark : benchmarkConfigs)
+    runBenchmark(benchmark);
 
   std::terminate(); // Kill all threads, including server thread
 }

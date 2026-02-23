@@ -12,6 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: lukka/get-cmake@latest
+      - name: Init submodules
+        run: git submodule update --init --recursive
       - name: Configure
         run: cmake -S . -B build
       - name: Build
@@ -22,6 +24,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: lukka/get-cmake@latest
+      - name: Init submodules
+        run: git submodule update --init --recursive
       - name: Configure
         run: cmake -S . -B build
       - name: Build

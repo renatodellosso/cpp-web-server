@@ -7,6 +7,8 @@
 #include "server.hpp"
 #include "client.hpp"
 #include "numformat.hpp"
+#include <unistd.h>
+#include <signal.h>
 
 constexpr unsigned int DEFAULT_DURATION = 20;
 
@@ -25,10 +27,22 @@ struct BenchmarkClientResults
   unsigned int failures;
 };
 
-void createServer()
+pid_t createServer()
 {
+  pid_t pid = fork();
+
+  if (pid < 0)
+  {
+    std::cerr << "Fork failed\n";
+    return pid;
+  }
+  else if (pid > 0)
+    return pid;
+
   startServer(
       "127.0.0.1", 3000, "./public");
+
+  return 0;
 }
 
 bool makeRequest(char *target)
@@ -95,11 +109,12 @@ void runBenchmarks()
   std::locale locale(std::locale(), new NumberFormat());
   std::cout.imbue(locale);
 
-  std::thread server(createServer);
+  pid_t serverPid = createServer();
   std::cout << "Started server\n";
 
   for (auto benchmark : benchmarkConfigs)
     runBenchmark(benchmark);
 
-  std::terminate(); // Kill all threads, including server thread
+  if (serverPid > 0)
+    kill(serverPid, SIGTERM);
 }

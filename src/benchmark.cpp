@@ -131,6 +131,7 @@ void runBenchmarks()
   unsigned long totalThroughput = 0;
   for (auto benchmark : benchmarkConfigs)
     totalThroughput += runBenchmark(benchmark);
+  totalThroughput /= benchmarkConfigs.size();
 
   std::cout << "\nAll benchmarks complete! Avg Throughput: " << totalThroughput << " reqs/sec\n";
 

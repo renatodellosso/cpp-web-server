@@ -99,7 +99,7 @@ void runBenchmark(BenchmarkConfig config)
     totalSuccesses += results.successes;
     totalFailures += results.failures;
 
-    std::cout << "\tClient " << i << ": " << results.successes << " successes, " << results.failures << " failures\n";
+    // std::cout << "\tClient " << i << ": " << results.successes << " successes, " << results.failures << " failures\n";
   }
 
   logBenchmarkResults(config, totalSuccesses, totalFailures);

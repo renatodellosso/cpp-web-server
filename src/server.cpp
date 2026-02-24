@@ -263,6 +263,19 @@ void handleConnection(asio::ip::tcp::socket &socket, std::shared_ptr<std::string
   socket.shutdown(asio::ip::tcp::socket::shutdown_send, error);
 }
 
+void awaitConnection(asio::io_context *ctx, asio::ip::tcp::acceptor *acceptor, std::shared_ptr<std::string> docRoot)
+{
+  asio::ip::tcp::socket socket{*ctx};
+
+  // Block until connection
+  (*acceptor).accept(socket);
+
+  // Handle on other thread
+  std::thread{
+      std::bind(&handleConnection, std::move(socket), docRoot)}
+      .detach();
+}
+
 // Prefix docRoot with a '.'
 void startServer(const char *addressRaw, unsigned short port, const char *docRootRaw)
 {
@@ -282,14 +295,6 @@ void startServer(const char *addressRaw, unsigned short port, const char *docRoo
 
   while (true)
   {
-    asio::ip::tcp::socket socket{ctx};
-
-    // Block until connection
-    acceptor.accept(socket);
-
-    // Handle on other thread
-    std::thread{
-        std::bind(&handleConnection, std::move(socket), docRoot)}
-        .detach();
+    awaitConnection(&ctx, &acceptor, docRoot);
   }
 }

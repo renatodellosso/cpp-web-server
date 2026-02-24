@@ -49,4 +49,4 @@ jobs:
       - name: Build
         run: cmake --build build
       - name: Run benchmarks
-        run: build/WebServer
+        run: build/WebServer >> $GITHUB_STEP_SUMMARY

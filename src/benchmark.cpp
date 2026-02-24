@@ -76,7 +76,7 @@ void logBenchmark(BenchmarkConfig config, unsigned int successes, unsigned int f
 
   std::cout << "\nBenchmark: " << config.clients << " clients, " << config.duration << "s duration\n";
   std::cout << "Throughput: " << throughput << " reqs/sec\n";
-  std::cout << "Success Rate: " << (100 * successes / (successes + failures)) << "%\n";
+  std::cout << "Success Rate: " << (100 * successes / (successes + failures)) << "% (" << successes << "successes, " << failures << " failures)\n";
 }
 
 void runBenchmark(BenchmarkConfig benchmark)

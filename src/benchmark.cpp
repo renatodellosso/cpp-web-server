@@ -17,7 +17,10 @@ std::vector<BenchmarkConfig> benchmarkConfigs = {
     {DEFAULT_DURATION, 3},
     {DEFAULT_DURATION, 5},
     {DEFAULT_DURATION, 10},
-    {DEFAULT_DURATION, 25}};
+    {DEFAULT_DURATION, 25},
+    {DEFAULT_DURATION, 50},
+    {DEFAULT_DURATION * 2, 25},
+    {DEFAULT_DURATION * 3, 100}};
 
 bool benchmarkDone = false;
 

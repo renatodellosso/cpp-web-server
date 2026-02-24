@@ -20,10 +20,9 @@ jobs:
         with:
           boost_version: 1.89.0
       - name: Configure
-        run: cmake \
-          -DBoost_INCLUDE_DIR=${{steps.install-boost.outputs.BOOST_ROOT}}/include \
-          -DBoost_LIBRARY_DIRS=${{steps.install-boost.outputs.BOOST_ROOT}}/lib \
-          -B build
+        run: cmake -B build \
+          -D Boost_INCLUDE_DIR=${{steps.install-boost.outputs.BOOST_ROOT}}/include \
+          -D Boost_LIBRARY_DIRS=${{steps.install-boost.outputs.BOOST_ROOT}}/lib \
         env:
           BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
       - name: Build
@@ -42,10 +41,9 @@ jobs:
         with:
           boost_version: 1.89.0
       - name: Configure
-        run: cmake \
+        run: cmake -B build \
           -D Boost_INCLUDE_DIR=${{steps.install-boost.outputs.BOOST_ROOT}}/include \
           -D Boost_LIBRARY_DIRS=${{steps.install-boost.outputs.BOOST_ROOT}}/lib \
-          -B build
         env:
           BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
       - name: Build

@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <signal.h>
 
+#include "boost/system.hpp"
+
 #include "benchmark.hpp"
 #include "server.hpp"
 #include "client.hpp"
@@ -50,7 +52,14 @@ pid_t createServer()
 
 bool makeRequest(char *target)
 {
-  return request("127.0.0.1", "3000", target);
+  try
+  {
+    return request("127.0.0.1", "3000", target);
+  }
+  catch (boost::wrapexcept<boost::system::system_error> error)
+  {
+    return false;
+  }
 }
 
 BenchmarkClientResults clientProcess()

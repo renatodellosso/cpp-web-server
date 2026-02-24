@@ -128,7 +128,7 @@ void runBenchmarks()
   pid_t serverPid = createServer();
   std::cout << "Started server\n";
 
-  unsigned long totalThroughput;
+  unsigned long totalThroughput = 0;
   for (auto benchmark : benchmarkConfigs)
     totalThroughput += runBenchmark(benchmark);
 

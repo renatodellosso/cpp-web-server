@@ -2,13 +2,13 @@
 #include <future>
 #include <iostream>
 #include <chrono>
+#include <unistd.h>
+#include <signal.h>
 
 #include "benchmark.hpp"
 #include "server.hpp"
 #include "client.hpp"
 #include "numformat.hpp"
-#include <unistd.h>
-#include <signal.h>
 
 constexpr unsigned int DEFAULT_DURATION = 20;
 
@@ -72,7 +72,7 @@ BenchmarkClientResults clientProcess()
 
 void logBenchmark(BenchmarkConfig config, unsigned long successes, unsigned long failures)
 {
-  unsigned long throughput = successes / config.duration;
+  unsigned long throughput = successes / (long)config.duration;
 
   std::cout << "\nBenchmark: " << config.clients << " clients, " << config.duration << "s duration\n";
   std::cout << "Throughput: " << throughput << " reqs/sec\n";

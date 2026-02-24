@@ -4,7 +4,7 @@ project(WebServer)
 
 add_executable(WebServer src/main.cpp)
 
-set(Boost_NO_BOOST_CMAKE OFF)
+set(Boost_NO_BOOST_CMAKE ON)
 find_package(Boost REQUIRED)
 target_include_directories(WebServer PRIVATE ${Boost_INCLUDE_DIRS})
 

@@ -52,7 +52,7 @@ bool makeRequest(char *target)
 
 BenchmarkClientResults clientProcess()
 {
-  BenchmarkClientResults results;
+  BenchmarkClientResults results{0, 0};
 
   char *targets[3] = {
       "/index.html",

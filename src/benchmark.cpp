@@ -10,7 +10,7 @@
 #include "client.hpp"
 #include "numformat.hpp"
 
-constexpr unsigned int DEFAULT_DURATION = 20;
+constexpr unsigned int DEFAULT_DURATION = 60;
 
 std::vector<BenchmarkConfig> benchmarkConfigs = {
     {DEFAULT_DURATION, 1},
@@ -81,7 +81,7 @@ void logBenchmarkResults(BenchmarkConfig config, unsigned long successes, unsign
   std::cout << "Success Rate: " << (100 * successes / (successes + failures)) << "% (" << successes << " successes, " << failures << " failures)\n";
 }
 
-void runBenchmark(BenchmarkConfig config)
+unsigned long runBenchmark(BenchmarkConfig config)
 {
   benchmarkDone = false;
 
@@ -106,6 +106,8 @@ void runBenchmark(BenchmarkConfig config)
   }
 
   logBenchmarkResults(config, totalSuccesses, totalFailures);
+
+  return totalSuccesses / config.duration;
 }
 
 void runBenchmarks()
@@ -117,8 +119,11 @@ void runBenchmarks()
   pid_t serverPid = createServer();
   std::cout << "Started server\n";
 
+  unsigned long totalThroughput;
   for (auto benchmark : benchmarkConfigs)
-    runBenchmark(benchmark);
+    totalThroughput += runBenchmark(benchmark);
+
+  std::cout << "\nAll benchmarks complete! Avg Throughput: " << totalThroughput << " reqs/sec\n";
 
   if (serverPid > 0)
     kill(serverPid, SIGTERM);

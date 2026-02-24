@@ -231,10 +231,10 @@ void handleConnection(asio::ip::tcp::socket &socket, std::shared_ptr<std::string
 
   // Persist buffer between reads
   beast::flat_buffer buffer;
+  beast::http::request<beast::http::string_body> req;
   while (true)
   {
     // Read a request
-    beast::http::request<beast::http::string_body> req;
     beast::http::read(socket, buffer, req, error);
 
     if (error == beast::http::error::end_of_stream)

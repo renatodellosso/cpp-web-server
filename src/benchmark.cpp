@@ -70,37 +70,39 @@ BenchmarkClientResults clientProcess()
   return results;
 }
 
-void logBenchmark(BenchmarkConfig config, unsigned long successes, unsigned long failures)
+void logBenchmarkResults(BenchmarkConfig config, unsigned long successes, unsigned long failures)
 {
   unsigned long throughput = successes / (long)config.duration;
 
-  std::cout << "\nBenchmark: " << config.clients << " clients, " << config.duration << "s duration\n";
   std::cout << "Throughput: " << throughput << " reqs/sec\n";
   std::cout << "Success Rate: " << (100 * successes / (successes + failures)) << "% (" << successes << " successes, " << failures << " failures)\n";
 }
 
-void runBenchmark(BenchmarkConfig benchmark)
+void runBenchmark(BenchmarkConfig config)
 {
   benchmarkDone = false;
 
-  std::future<BenchmarkClientResults> clients[benchmark.clients];
+  std::future<BenchmarkClientResults> clients[config.clients];
 
-  for (int i = 0; i < benchmark.clients; i++)
+  for (int i = 0; i < config.clients; i++)
     clients[i] = std::async(&clientProcess);
 
-  std::this_thread::sleep_for(std::chrono::seconds(benchmark.duration));
+  std::this_thread::sleep_for(std::chrono::seconds(config.duration));
 
   benchmarkDone = true;
 
+  std::cout << "\nBenchmark: " << config.clients << " clients, " << config.duration << "s duration\n";
   unsigned long totalSuccesses = 0, totalFailures = 0;
-  for (int i = 0; i < benchmark.clients; i++)
+  for (int i = 0; i < config.clients; i++)
   {
     BenchmarkClientResults results = clients[i].get();
     totalSuccesses += results.successes;
     totalFailures += results.failures;
+
+    std::cout << "\tClient " << i << ": " << results.successes << " successes, " << results.failures << " failures\n";
   }
 
-  logBenchmark(benchmark, totalSuccesses, totalFailures);
+  logBenchmarkResults(config, totalSuccesses, totalFailures);
 }
 
 void runBenchmarks()

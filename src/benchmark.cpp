@@ -23,8 +23,8 @@ bool benchmarkDone = false;
 
 struct BenchmarkClientResults
 {
-  unsigned int successes;
-  unsigned int failures;
+  unsigned long successes;
+  unsigned long failures;
 };
 
 pid_t createServer()
@@ -70,13 +70,13 @@ BenchmarkClientResults clientProcess()
   return results;
 }
 
-void logBenchmark(BenchmarkConfig config, unsigned int successes, unsigned int failures)
+void logBenchmark(BenchmarkConfig config, unsigned long successes, unsigned long failures)
 {
-  unsigned int throughput = successes / config.duration;
+  unsigned long throughput = successes / config.duration;
 
   std::cout << "\nBenchmark: " << config.clients << " clients, " << config.duration << "s duration\n";
   std::cout << "Throughput: " << throughput << " reqs/sec\n";
-  std::cout << "Success Rate: " << (100 * successes / (successes + failures)) << "% (" << successes << "successes, " << failures << " failures)\n";
+  std::cout << "Success Rate: " << (100 * successes / (successes + failures)) << "% (" << successes << " successes, " << failures << " failures)\n";
 }
 
 void runBenchmark(BenchmarkConfig benchmark)
@@ -92,7 +92,7 @@ void runBenchmark(BenchmarkConfig benchmark)
 
   benchmarkDone = true;
 
-  unsigned int totalSuccesses = 0, totalFailures = 0;
+  unsigned long totalSuccesses = 0, totalFailures = 0;
   for (int i = 0; i < benchmark.clients; i++)
   {
     BenchmarkClientResults results = clients[i].get();

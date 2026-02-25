@@ -1,5 +1,5 @@
 #pragma once
 
-#define SERVER_LOGGING_ENABLED
+// #define SERVER_LOGGING_ENABLED
 
-void startServer(const char* addressRaw, unsigned short port, const char* docRoot);
+void startServer(const char *addressRaw, unsigned short port, const char *docRoot);

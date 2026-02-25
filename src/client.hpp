@@ -1,3 +1,3 @@
 #pragma once
 
-bool request(char *host, char *port, char *target);
+bool request(const char *host, const char *port, const char *target);

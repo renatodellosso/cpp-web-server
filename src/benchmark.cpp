@@ -51,7 +51,7 @@ pid_t createServer()
   return 0;
 }
 
-bool makeRequest(char *target)
+bool makeRequest(const char *target)
 {
   try
   {
@@ -67,7 +67,7 @@ BenchmarkClientResults clientProcess()
 {
   BenchmarkClientResults results{0, 0};
 
-  char *targets[3] = {
+  const char *targets[3] = {
       "/index.html",
       "/index.css",
       "/index.js"};

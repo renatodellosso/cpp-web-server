@@ -5,7 +5,7 @@
 namespace beast = boost::beast;
 namespace asio = boost::asio;
 
-bool request(char *host, char *port, char *target)
+bool request(const char *host, const char *port, const char *target)
 {
   asio::io_context ctx;
   asio::ip::tcp::resolver resolver(ctx);

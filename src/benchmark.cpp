@@ -12,7 +12,7 @@
 #include "client.hpp"
 #include "numformat.hpp"
 
-constexpr unsigned int DEFAULT_DURATION = 60;
+constexpr unsigned int DEFAULT_DURATION = 180;
 
 std::vector<BenchmarkConfig> benchmarkConfigs = {
     // {DEFAULT_DURATION, 1},

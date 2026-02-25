@@ -12,18 +12,13 @@
 namespace beast = boost::beast;
 namespace asio = boost::asio;
 
-void logResponse(std::string target,
-                 beast::http::status status)
-{
-  if (SERVER_LOGGING_ENABLED)
-    std::cout << status << ": " << target << "\n";
-}
-
-void fail(beast::error_code error, const char *what)
-{
-  if (SERVER_LOGGING_ENABLED)
-    std::cerr << what << ": " << error.message() << "\n";
-}
+#ifdef SERVER_LOGGING_ENABLED
+#define LOG_RESPONSE(target, status) std::cout << status << ": " << target << "\n";
+#define FAIL(error, what) std::cerr << what << ": " << error.message() << "\n";
+#else
+#define LOG_RESPONSE(target, status)
+#define FAIL(error, what)
+#endif
 
 beast::string_view mimeType(beast::string_view path)
 {
@@ -127,7 +122,7 @@ beast::http::message_generator handleRequest(
     res.keep_alive(req.keep_alive());
     res.body() = std::string(why);
 
-    logResponse(req.target(), beast::http::status::bad_request);
+    LOG_RESPONSE(req.target(), beast::http::status::bad_request);
 
     res.prepare_payload();
     return res;
@@ -144,7 +139,7 @@ beast::http::message_generator handleRequest(
     res.keep_alive(req.keep_alive());
     res.body() = "The resource '" + std::string(target) + "' was not found.";
 
-    logResponse(req.target(), beast::http::status::not_found);
+    LOG_RESPONSE(req.target(), beast::http::status::not_found);
 
     res.prepare_payload();
     return res;
@@ -161,7 +156,7 @@ beast::http::message_generator handleRequest(
     res.keep_alive(req.keep_alive());
     res.body() = "An error ocurred: '" + std::string(what) + "'";
 
-    logResponse(req.target(), beast::http::status::internal_server_error);
+    LOG_RESPONSE(req.target(), beast::http::status::internal_server_error);
 
     res.prepare_payload();
     return res;
@@ -205,7 +200,7 @@ beast::http::message_generator handleRequest(
     res.content_length(size);
     res.keep_alive(req.keep_alive());
 
-    logResponse(req.target(), beast::http::status::ok);
+    LOG_RESPONSE(req.target(), beast::http::status::ok);
 
     return res;
   }
@@ -220,7 +215,7 @@ beast::http::message_generator handleRequest(
   res.content_length(size);
   res.keep_alive(req.keep_alive());
 
-  logResponse(req.target(), beast::http::status::ok);
+  LOG_RESPONSE(req.target(), beast::http::status::ok);
 
   return res;
 }
@@ -240,7 +235,10 @@ void handleConnection(asio::ip::tcp::socket &socket, std::shared_ptr<std::string
     if (error == beast::http::error::end_of_stream)
       break;
     if (error)
-      return fail(error, "read");
+    {
+      FAIL(error, "read");
+      return;
+    }
 
     // Handle request
     beast::http::message_generator msg = handleRequest(*docRoot, std::move(req));
@@ -250,7 +248,10 @@ void handleConnection(asio::ip::tcp::socket &socket, std::shared_ptr<std::string
     beast::write(socket, std::move(msg), error);
 
     if (error)
-      return fail(error, "write");
+    {
+      FAIL(error, "write");
+      return;
+    }
 
     if (!keepAlive)
     {
@@ -282,16 +283,18 @@ void startServer(const char *addressRaw, unsigned short port, const char *docRoo
   const auto address = asio::ip::make_address(addressRaw);
   const auto docRoot = std::make_shared<std::string>(docRootRaw);
 
-  if (SERVER_LOGGING_ENABLED)
-    std::cout << "Server starting on port " << port << " with root '" << *docRoot << "'\n";
+#ifdef SERVER_LOGGING_ENABLED
+  std::cout << "Server starting on port " << port << " with root '" << *docRoot << "'\n";
+#endif
 
   asio::io_context ctx{1};
 
   asio::ip::tcp::acceptor acceptor{
       ctx, {address, port}};
 
-  if (SERVER_LOGGING_ENABLED)
-    std::cout << "Server started\n";
+#ifdef SERVER_LOGGING_ENABLED
+  std::cout << "Server started\n";
+#endif
 
   while (true)
   {

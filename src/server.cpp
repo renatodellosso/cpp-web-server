@@ -15,9 +15,11 @@ namespace asio = boost::asio;
 #ifdef SERVER_LOGGING_ENABLED
 #define LOG_RESPONSE(target, status) std::cout << status << ": " << target << "\n";
 #define FAIL(error, what) std::cerr << what << ": " << error.message() << "\n";
+#define LOG(msg) std::cout << msg << "\n";
 #else
 #define LOG_RESPONSE(target, status)
 #define FAIL(error, what)
+#define LOG(msg)
 #endif
 
 beast::string_view mimeType(beast::string_view path)
@@ -264,17 +266,50 @@ void handleConnection(asio::ip::tcp::socket &socket, std::shared_ptr<std::string
   socket.shutdown(asio::ip::tcp::socket::shutdown_send, error);
 }
 
-void awaitConnection(asio::io_context *ctx, asio::ip::tcp::acceptor *acceptor, std::shared_ptr<std::string> docRoot)
+auto queue = std::queue<asio::ip::tcp::socket>();
+
+void processQueue(unsigned short id, std::shared_ptr<std::string const> const &docRoot)
 {
-  asio::ip::tcp::socket socket{*ctx};
+  LOG("Processor thread " << id << " online");
+  while (true)
+  {
+    if (queue.empty())
+      continue;
 
-  // Block until connection
-  (*acceptor).accept(socket);
+    LOG("Processing request...");
+    asio::ip::tcp::socket socket = std::move(queue.front());
+    LOG("Retrieved queue.front()");
+    queue.pop();
+    LOG("Popped queue");
+    handleConnection(socket, docRoot);
+    LOG("Handled request!");
+  }
+}
 
-  // Handle on other thread
-  std::thread{
-      std::bind(&handleConnection, std::move(socket), docRoot)}
-      .detach();
+constexpr unsigned short PROCESSOR_THREADS = 5;
+
+void initProcessorThreads(std::shared_ptr<std::string const> const &docRoot)
+{
+  for (unsigned short i = 0; i < PROCESSOR_THREADS; i++)
+  {
+    LOG("Starting processor thread " << i << "...");
+    std::thread(std::bind(processQueue, i, docRoot)).detach();
+  }
+}
+
+void awaitConnections(asio::io_context *ctx, asio::ip::tcp::acceptor *acceptor)
+{
+  LOG("Awaiting connections...");
+
+  while (true)
+  {
+    asio::ip::tcp::socket socket{*ctx};
+
+    // Block until connection
+    (*acceptor).accept(socket);
+    queue.push(std::move(socket));
+    LOG("Accepted connection!");
+  }
 }
 
 // Prefix docRoot with a '.'
@@ -283,21 +318,13 @@ void startServer(const char *addressRaw, unsigned short port, const char *docRoo
   const auto address = asio::ip::make_address(addressRaw);
   const auto docRoot = std::make_shared<std::string>(docRootRaw);
 
-#ifdef SERVER_LOGGING_ENABLED
-  std::cout << "Server starting on port " << port << " with root '" << *docRoot << "'\n";
-#endif
+  LOG("Server starting on port " << port << " with root '" << *docRoot << "'");
 
   asio::io_context ctx{1};
 
   asio::ip::tcp::acceptor acceptor{
       ctx, {address, port}};
 
-#ifdef SERVER_LOGGING_ENABLED
-  std::cout << "Server started\n";
-#endif
-
-  while (true)
-  {
-    awaitConnection(&ctx, &acceptor, docRoot);
-  }
+  initProcessorThreads(docRoot);
+  awaitConnections(&ctx, &acceptor);
 }

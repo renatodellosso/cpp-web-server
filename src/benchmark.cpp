@@ -127,11 +127,14 @@ void runBenchmarks()
   std::cout.imbue(locale);
 
   pid_t serverPid = createServer();
-  std::cout << "Started server\n";
+  std::cout << "Server process starting...\n";
 
   unsigned long totalThroughput = 0;
   for (auto benchmark : benchmarkConfigs)
+  {
+    std::cout << "Running benchmark...\n";
     totalThroughput += runBenchmark(benchmark);
+  }
   totalThroughput /= benchmarkConfigs.size();
 
   std::cout << "\nAll benchmarks complete! Avg Throughput: " << totalThroughput << " reqs/sec\n";
